@@ -9,9 +9,10 @@ namespace Contracts
 	public interface IStorageService
 	{
 		Task<FileDetails> UploadFileAsync(Stream fileStream, FileDetails fileDetails);
-		Task<Stream> DownloadFileAsync(string id);
+		Task<(Stream, FileDetails)> DownloadFileAsync(string id);
 		Task<FileDetails> UpdateFileDetails(FileDetails details);
 		Task<FileDetails> GetFileDetails(string id);
 		Task<IEnumerable<FileDetails>> GetAllFileDetails();
+		Task<IEnumerable<FileDetails>> GetFileDetailsByTag(string tag);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Models
 {
@@ -10,7 +11,8 @@ namespace Models
 		public DateTime AddedDate { get; set; }
 		public string AddedBy { get; set; }
 		public string Description { get; set; }
-		public string Tags { get; set; }
-
+		public IEnumerable<string> Tags { get; set; }
+		public DateTime LastModified { get; set; }
+		public string ContentType { get; set; }
 	}
 }

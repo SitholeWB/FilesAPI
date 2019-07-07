@@ -26,9 +26,12 @@ namespace Services
 			fsBucket = new GridFSBucket(db, new GridFSBucketOptions { BucketName = bucket });
 		}
 
-		public async Task<Stream> DownloadFileAsync(string id)
+		public async Task<(Stream, FileDetails)> DownloadFileAsync(string id)
 		{
-			return await fsBucket.OpenDownloadStreamAsync(BsonValue.Create(id));
+			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
+			var fileDetails = await results.FirstOrDefaultAsync();
+			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(id)), fileDetails);
 		}
 
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetails()
@@ -44,27 +47,38 @@ namespace Services
 			return await results.FirstOrDefaultAsync();
 		}
 
+		public async Task<IEnumerable<FileDetails>> GetFileDetailsByTag(string tag)
+		{
+			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			FilterDefinitionBuilder<FileDetails> tcBuilder = Builders<FileDetails>.Filter;
+			FilterDefinition<FileDetails> tcFilter = tcBuilder.Eq("Tags", tag);
+			var results = await collection.FindAsync(tcFilter);
+			return await results.ToListAsync<FileDetails>();
+		}
+
 		public async Task<FileDetails> UpdateFileDetails(FileDetails details)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(details.Id));
 
-			if(await results.FirstOrDefaultAsync() == null)
+			FileDetails odlFileDetails = await results.FirstOrDefaultAsync();
+			if (odlFileDetails == null)
 			{
 				throw new GridFSFileNotFoundException(details.Id);
 			}
-
 			var filter = Builders<FileDetails>.Filter.Eq("Id", details.Id);
 
 			var update = Builders<FileDetails>.Update
-						.Set("Name", details.Name)
-						.Set("Description", details.Description)
-						.Set("AddedBy", details.AddedBy)
-						.Set("Tags", details.Tags)
-						.CurrentDate("lastModified");
+						.Set("Name", details.Name ?? odlFileDetails.Name)
+						.Set("Description", details.Description ?? odlFileDetails.Description)
+						.Set("AddedBy", details.AddedBy ?? odlFileDetails.AddedBy)
+						.Set("Tags", details.Tags ?? odlFileDetails.Tags)
+						.CurrentDate("LastModified");
 
 			await collection.UpdateOneAsync(filter, update);
-			return details;
+
+			results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(details.Id));
+			return await results.FirstOrDefaultAsync();
 		}
 
 		public async Task<FileDetails> UploadFileAsync(Stream inputStream, FileDetails fileDetails)
