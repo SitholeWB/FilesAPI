@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Models.Settings;
 using Services;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -45,8 +46,11 @@ namespace FilesAPI
 			{
 				c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
 			});
+			//App Settings Injection
+			services.Configure<MongoDBAppSettings>(Configuration.GetSection("MongoDBAppSettings"));
 
 			services.AddTransient<IStorageService, StorageService>();
+			services.AddSingleton<ISettingsService, SettingsService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,6 +67,7 @@ namespace FilesAPI
 			app.UseSwaggerUI(c =>
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+				c.RoutePrefix = string.Empty;
 			});
 			app.UseMvc();
 

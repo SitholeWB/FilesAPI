@@ -18,9 +18,9 @@ namespace Services
 		private readonly GridFSBucket fsBucket = null;
 
 		private readonly IMongoDatabase fileInfoDB = null;
-		public StorageService(string connStr = "mongodb://localhost:27017")
+		public StorageService(ISettingsService settingsService)
 		{
-			var client = new MongoClient(connStr);
+			var client = new MongoClient(settingsService.GetMongoDBAppSettings().ConnectionString);
 			fileInfoDB = client.GetDatabase(fileInfoDbName);
 			var db = client.GetDatabase(fileBucketDbName);
 			fsBucket = new GridFSBucket(db, new GridFSBucketOptions { BucketName = bucket });
