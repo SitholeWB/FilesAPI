@@ -26,6 +26,17 @@ namespace Services
 			fsBucket = new GridFSBucket(db, new GridFSBucketOptions { BucketName = bucket });
 		}
 
+		public async Task<string> DeleteFileAsync(string id)
+		{
+			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
+			var fileDetails = await results.FirstOrDefaultAsync();
+
+			collection.DeleteOne(info => info.Id == id);
+			fsBucket.Delete(ObjectId.Parse(id));
+			return id;
+		}
+
 		public async Task<(Stream, FileDetails)> DownloadFileAsync(string id)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
@@ -34,20 +45,20 @@ namespace Services
 			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(id)), fileDetails);
 		}
 
-		public async Task<IEnumerable<FileDetails>> GetAllFileDetails()
+		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			return await collection.AsQueryable().ToListAsync();
 		}
 
-		public async Task<FileDetails> GetFileDetails(string id)
+		public async Task<FileDetails> GetFileDetailsAsync(string id)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			return await results.FirstOrDefaultAsync();
 		}
 
-		public async Task<IEnumerable<FileDetails>> GetFileDetailsByTag(string tag)
+		public async Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			FilterDefinitionBuilder<FileDetails> tcBuilder = Builders<FileDetails>.Filter;
@@ -56,7 +67,7 @@ namespace Services
 			return await results.ToListAsync<FileDetails>();
 		}
 
-		public async Task<FileDetails> UpdateFileDetails(FileDetails details)
+		public async Task<FileDetails> UpdateFileDetailsAsync(FileDetails details)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(details.Id));

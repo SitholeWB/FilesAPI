@@ -55,26 +55,34 @@ namespace FilesAPI.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetAllFileDetails()
 		{
-			return Ok(await _storageService.GetAllFileDetails());
+			return Ok(await _storageService.GetAllFileDetailsAsync());
 		}
 
 		[HttpGet("details/{id}")]
 		public async Task<IActionResult> GetFileDetails(string id)
 		{
-			return Ok(await _storageService.GetFileDetails(id));
+			return Ok(await _storageService.GetFileDetailsAsync(id));
 		}
 
 		[HttpPut("details/{id}")]
 		public async Task<IActionResult> UpdateFileDetails(FileDetails details, string id)
 		{
 			details.Id = id;
-			return Ok(await _storageService.UpdateFileDetails(details));
+			return Ok(await _storageService.UpdateFileDetailsAsync(details));
 		}
 
 		[HttpGet("details/tags/{tag}")]
 		public async Task<IActionResult> GetFileDetailsByTag(string tag)
 		{
-			return Ok(await _storageService.GetFileDetailsByTag(tag));
+			return Ok(await _storageService.GetFileDetailsByTagAsync(tag));
+		}
+
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteFileAsync(string id)
+		{
+			string deletedId = await _storageService.DeleteFileAsync(id);
+			return base.Ok($"Deleted {deletedId} successfully");
 		}
 
 	}
