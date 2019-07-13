@@ -29,11 +29,8 @@ namespace Services
 		public async Task<string> DeleteFileAsync(string id)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
-			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
-			var fileDetails = await results.FirstOrDefaultAsync();
-
-			collection.DeleteOne(info => info.Id == id);
-			fsBucket.Delete(ObjectId.Parse(id));
+			await collection.DeleteOneAsync(info => info.Id == id);
+			await fsBucket.DeleteAsync(ObjectId.Parse(id));
 			return id;
 		}
 
