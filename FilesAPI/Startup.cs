@@ -44,7 +44,11 @@ namespace FilesAPI
 			});
 			services.AddSwaggerGen(c =>
 			{
-				c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+				c.SwaggerDoc("v1", new Info
+				{
+					Title = "Files API",
+					Version = "v1"
+				});
 			});
 			//App Settings Injection
 			services.Configure<MongoDBAppSettings>(Configuration.GetSection("MongoDBAppSettings"));
@@ -65,12 +69,12 @@ namespace FilesAPI
 			}
 			else
 			{
-				swaggerUrl = "/FilesAPI/swagger/v1/swagger.json";
+				swaggerUrl = "/FilesAPI/swagger/v1/swagger.json";//For IIS hosting
 			}
 			app.UseSwagger();
 			app.UseSwaggerUI(c =>
 			{
-				c.SwaggerEndpoint(swaggerUrl, "My API V1");
+				c.SwaggerEndpoint(swaggerUrl, "Files API V1");
 				c.RoutePrefix = string.Empty;
 			});
 			app.UseMvc();
