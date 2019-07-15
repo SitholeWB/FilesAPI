@@ -9,4 +9,4 @@ You should be ready to run project from visual studio and swagger page will give
 Feel free to improve this service API and create pull requests!
 
 # Issues
-1. https://github.com/SitholeWB/FilesAPI/issues
+1. [File size limitation on upload](https://github.com/SitholeWB/FilesAPI/issues)
