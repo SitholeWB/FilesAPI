@@ -1,5 +1,5 @@
 # Introduction 
-This is an API that stores any type of files. It also store basic information about the file, that basic information can be updated. This can be useful if you planning to create a project using microservices and you need service to stiore files.
+This is an API that stores any type of files. It also store basic information about the file, that basic information can be updated. This can be useful if you planning to create a project using microservices and you need service to store files.
 
 # Getting Started
 Install MongoDB and have dotnet development environment ready (i.e Visual studio). You must install dotnet core 2.2.
