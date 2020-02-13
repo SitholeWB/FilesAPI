@@ -52,6 +52,13 @@ namespace FilesAPI.Controllers
 			return File(content, details.ContentType, details.Name);
 		}
 
+		[HttpGet("{id}/view")]
+		public async Task<FileStreamResult> DownloadView(string id)
+		{
+			var (stream, details) = await _storageService.DownloadFileAsync(id);
+			return new FileStreamResult(stream, details.ContentType);
+		}
+
 		[HttpGet]
 		public async Task<IActionResult> GetAllFileDetails()
 		{
