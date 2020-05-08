@@ -52,6 +52,7 @@ namespace FilesAPI
 			});
 			//App Settings Injection
 			services.Configure<MongoDBAppSettings>(Configuration.GetSection("MongoDBAppSettings"));
+			services.Configure<LiteDBAppSettings>(Configuration.GetSection("LiteDBAppSettings"));
 
 			services.AddTransient<IStorageService, StorageService>();
 			services.AddSingleton<ISettingsService, SettingsService>();
@@ -78,7 +79,6 @@ namespace FilesAPI
 				c.RoutePrefix = string.Empty;
 			});
 			app.UseMvc();
-
 		}
 	}
 }
