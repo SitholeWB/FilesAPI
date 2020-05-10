@@ -86,6 +86,7 @@ namespace Services
 						.Set("Description", details.Description ?? odlFileDetails.Description)
 						.Set("AddedBy", details.AddedBy ?? odlFileDetails.AddedBy)
 						.Set("Tags", details.Tags ?? odlFileDetails.Tags)
+						.Set("NumberOfDownloads", details.NumberOfDownloads ?? odlFileDetails.NumberOfDownloads)
 						.CurrentDate("LastModified");
 
 			await collection.UpdateOneAsync(filter, update);

@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models.Settings;
 using Services;
+using Services.Middlewares;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace FilesAPI
@@ -79,6 +80,7 @@ namespace FilesAPI
 				c.SwaggerEndpoint(swaggerUrl, "Files API V1");
 				c.RoutePrefix = string.Empty;
 			});
+			app.UseMiddleware(typeof(VideoDownloadsCountMiddleware));
 			app.UseMvc();
 		}
 	}

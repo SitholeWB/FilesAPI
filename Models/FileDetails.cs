@@ -14,5 +14,6 @@ namespace Models
 		public IEnumerable<string> Tags { get; set; }
 		public DateTime LastModified { get; set; }
 		public string ContentType { get; set; }
+		public int? NumberOfDownloads { get; set; }
 	}
 }
