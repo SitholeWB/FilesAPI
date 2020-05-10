@@ -54,6 +54,7 @@ namespace FilesAPI
 			services.Configure<MongoDBAppSettings>(Configuration.GetSection("MongoDBAppSettings"));
 			services.Configure<LiteDBAppSettings>(Configuration.GetSection("LiteDBAppSettings"));
 
+			//services.AddSingleton<IStorageService, FilesService>();
 			services.AddTransient<IStorageService, StorageService>();
 			services.AddSingleton<ISettingsService, SettingsService>();
 		}

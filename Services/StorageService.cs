@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-	public class StorageService : IStorageService
+	public sealed class StorageService : IStorageService
 	{
 		private readonly string fileInfoDbName = "FileInfo";
 		private readonly string fileBucketDbName = "FileBucket";
@@ -32,6 +32,11 @@ namespace Services
 			await collection.DeleteOneAsync(info => info.Id == id);
 			await fsBucket.DeleteAsync(ObjectId.Parse(id));
 			return id;
+		}
+
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
 		}
 
 		public async Task<(Stream, FileDetails)> DownloadFileAsync(string id)
