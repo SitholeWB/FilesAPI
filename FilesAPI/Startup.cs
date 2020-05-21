@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Models.Settings;
 using Services;
 using Services.Middlewares;
@@ -30,7 +32,7 @@ namespace FilesAPI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			//services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 			services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll",
@@ -39,13 +41,12 @@ namespace FilesAPI
 						builder
 						.AllowAnyOrigin()
 						.AllowAnyMethod()
-						.AllowAnyHeader()
-						.AllowCredentials();
+						.AllowAnyHeader();
 					});
 			});
 			services.AddSwaggerGen(c =>
 			{
-				c.SwaggerDoc("v1", new Info
+				c.SwaggerDoc("v1", new OpenApiInfo
 				{
 					Title = "Files API",
 					Version = "v1"
@@ -58,10 +59,12 @@ namespace FilesAPI
 			//services.AddSingleton<IStorageService, FilesService>();
 			services.AddTransient<IStorageService, StorageService>();
 			services.AddSingleton<ISettingsService, SettingsService>();
+
+			services.AddControllers();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			app.UseCors("AllowAll");
 			app.UseStaticFiles();
@@ -81,7 +84,14 @@ namespace FilesAPI
 				c.RoutePrefix = string.Empty;
 			});
 			app.UseMiddleware(typeof(VideoDownloadsCountMiddleware));
-			app.UseMvc();
+			app.UseHttpsRedirection();
+
+			app.UseRouting();
+
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllers();
+			});
 		}
 	}
 }

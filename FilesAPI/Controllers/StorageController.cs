@@ -8,6 +8,7 @@ using FilesAPI.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using Models.Commands;
 
 namespace FilesAPI.Controllers
 {
@@ -22,10 +23,12 @@ namespace FilesAPI.Controllers
 			_storageService = storageService;
 		}
 
-		//Example from https://janaks.com.np/file-upload-asp-net-core-web-api/
+		//Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
 		[HttpPost]
-		public async Task<IActionResult> UploadFile(IFormFile file)
+		
+		public async Task<IActionResult> UploadFile([FromForm]UploadImageCommand imageCommand)
 		{
+			var file = imageCommand.File;
 			if (file.Length > 0)
 			{
 				var details = new FileDetails
@@ -34,7 +37,9 @@ namespace FilesAPI.Controllers
 					Name = file.FileName,
 					AddedDate = DateTime.UtcNow,
 					LastModified = DateTime.UtcNow,
-					ContentType = file.ContentType
+					ContentType = file.ContentType,
+					Description = imageCommand.Description,
+					Tags = imageCommand.Tags
 				};
 
 				return Ok(await _storageService.UploadFileAsync(file.OpenReadStream(), details));
