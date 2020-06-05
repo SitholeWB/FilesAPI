@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,7 +33,20 @@ namespace FilesAPI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			//services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+			services.Configure<KestrelServerOptions>(options =>
+			{
+				options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+			});
+			services.Configure<IISServerOptions>(options =>
+			{
+				options.MaxRequestBodySize = int.MaxValue;
+			});
+			services.Configure<FormOptions>(options =>
+			{
+				options.ValueLengthLimit = int.MaxValue;
+				options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
+				options.MultipartHeadersLengthLimit = int.MaxValue;
+			});
 			services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll",

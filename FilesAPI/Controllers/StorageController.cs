@@ -25,7 +25,7 @@ namespace FilesAPI.Controllers
 
 		//Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
 		[HttpPost]
-		
+		[DisableRequestSizeLimit]
 		public async Task<IActionResult> UploadFile([FromForm]UploadImageCommand imageCommand)
 		{
 			var file = imageCommand.File;
