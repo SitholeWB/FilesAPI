@@ -50,19 +50,23 @@ namespace FilesAPI.Controllers
 			}
 		}
 
-		/*
 		[HttpGet("{id}")]
 		public async Task<IActionResult> DownLoadFile(string id)
 		{
 			var (content, details) = await _storageService.DownloadFileAsync(id);
+			this.Response.ContentLength = details.Size;
+			this.Response.Headers.Add("Accept-Ranges", "bytes");
+			this.Response.Headers.Add("Content-Range", "bytes 0-" + details.Size);
 			return File(content, details.ContentType, details.Name);
 		}
-		*/
-
+		
 		[HttpGet("{id}/view")]
 		public async Task<FileStreamResult> DownloadView(string id)
 		{
 			var (stream, details) = await _storageService.DownloadFileAsync(id);
+			this.Response.ContentLength = details.Size;
+			this.Response.Headers.Add("Accept-Ranges", "bytes");
+			this.Response.Headers.Add("Content-Range", "bytes 0-" + details.Size);
 			return new FileStreamResult(stream, details.ContentType);
 		}
 
