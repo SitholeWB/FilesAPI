@@ -1,23 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Contracts;
+﻿using Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Models.Settings;
 using Services;
-using Services.Middlewares;
-using Swashbuckle.AspNetCore.Swagger;
 
 namespace FilesAPI
 {
@@ -97,7 +88,7 @@ namespace FilesAPI
 				c.SwaggerEndpoint(swaggerUrl, "Files API V1");
 				c.RoutePrefix = string.Empty;
 			});
-			app.UseMiddleware(typeof(VideoDownloadsCountMiddleware));
+
 			app.UseHttpsRedirection();
 
 			app.UseRouting();

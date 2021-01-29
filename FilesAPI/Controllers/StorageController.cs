@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Contracts;
-using FilesAPI.Filters;
-using Microsoft.AspNetCore.Http;
+﻿using Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Commands;
+using System;
+using System.Threading.Tasks;
 
 namespace FilesAPI.Controllers
 {
@@ -26,7 +21,7 @@ namespace FilesAPI.Controllers
 		//Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
 		[HttpPost]
 		[DisableRequestSizeLimit]
-		public async Task<IActionResult> UploadFile([FromForm]UploadImageCommand imageCommand)
+		public async Task<IActionResult> UploadFile([FromForm] UploadImageCommand imageCommand)
 		{
 			var file = imageCommand.File;
 			if (file.Length > 0)
@@ -59,7 +54,7 @@ namespace FilesAPI.Controllers
 			this.Response.Headers.Add("Content-Range", "bytes 0-" + details.Size);
 			return File(content, details.ContentType, details.Name);
 		}
-		
+
 		[HttpGet("{id}/view")]
 		public async Task<FileStreamResult> DownloadView(string id)
 		{
@@ -95,13 +90,11 @@ namespace FilesAPI.Controllers
 			return Ok(await _storageService.GetFileDetailsByTagAsync(tag));
 		}
 
-
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteFileAsync(string id)
 		{
 			string deletedId = await _storageService.DeleteFileAsync(id);
 			return base.Ok($"Deleted {deletedId} successfully");
 		}
-
 	}
 }

@@ -1,9 +1,6 @@
 ﻿using Contracts;
 using Microsoft.Extensions.Options;
 using Models.Settings;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Services
 {
