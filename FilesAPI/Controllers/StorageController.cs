@@ -100,10 +100,10 @@ namespace FilesAPI.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		public async Task<IActionResult> DeleteFileAsync(string id)
+		public async Task<ActionResult<string>> DeleteFileAsync(string id)
 		{
 			string deletedId = await _storageService.DeleteFileAsync(id);
-			return base.Ok($"Deleted {deletedId} successfully");
+			return Ok($"Deleted '{deletedId}' successfully.");
 		}
 	}
 }

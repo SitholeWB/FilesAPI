@@ -39,9 +39,15 @@ namespace Services
 			{
 				throw new FilesApiException("No File found for given Id");
 			}
+
 			await collection.DeleteOneAsync(info => info.Id == id);
-			await fsBucket.DeleteAsync(ObjectId.Parse(fileDetails.StorageId));
-			return id;
+
+			results = await collection.FindAsync(fileInfo => fileInfo.StorageId.Equals(fileDetails.StorageId));
+			if (!await results.AnyAsync())
+			{
+				await fsBucket.DeleteAsync(ObjectId.Parse(fileDetails.StorageId));
+			}
+			return fileDetails.Name;
 		}
 
 		public void Dispose()
