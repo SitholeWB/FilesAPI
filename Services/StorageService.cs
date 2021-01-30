@@ -1,5 +1,6 @@
 ﻿using Contracts;
 using Models;
+using Models.Exceptions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -33,8 +34,13 @@ namespace Services
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
-			var fileDetails = await results.FirstOrDefaultAsync(); await collection.DeleteOneAsync(info => info.Id == id);
-			await fsBucket.DeleteAsync(ObjectId.Parse(fileDetails.SharedStorageId));
+			var fileDetails = await results.FirstOrDefaultAsync();
+			if (fileDetails == default)
+			{
+				throw new FilesApiException("No File found for given Id");
+			}
+			await collection.DeleteOneAsync(info => info.Id == id);
+			await fsBucket.DeleteAsync(ObjectId.Parse(fileDetails.StorageId));
 			return id;
 		}
 
@@ -48,7 +54,10 @@ namespace Services
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			var fileDetails = await results.FirstOrDefaultAsync();
-
+			if (fileDetails == default)
+			{
+				throw new FilesApiException("No File found for given Id");
+			}
 			var filter = Builders<FileDetails>.Filter.Eq("Id", id);
 			var update = Builders<FileDetails>.Update
 			.Set("NumberOfDownloads", fileDetails.NumberOfDownloads + 1)
@@ -56,7 +65,7 @@ namespace Services
 
 			await collection.UpdateOneAsync(filter, update);
 
-			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(fileDetails.SharedStorageId)), fileDetails);
+			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(fileDetails.StorageId)), fileDetails);
 		}
 
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
@@ -75,8 +84,8 @@ namespace Services
 		public async Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag)
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
-			FilterDefinitionBuilder<FileDetails> tcBuilder = Builders<FileDetails>.Filter;
-			FilterDefinition<FileDetails> tcFilter = tcBuilder.Eq("Tags", tag);
+			var tcBuilder = Builders<FileDetails>.Filter;
+			var tcFilter = tcBuilder.Eq("Tags", tag);
 			var results = await collection.FindAsync(tcFilter);
 			return await results.ToListAsync<FileDetails>();
 		}
@@ -85,12 +94,13 @@ namespace Services
 		{
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(details.Id));
+			var odlFileDetails = await results.FirstOrDefaultAsync();
 
-			FileDetails odlFileDetails = await results.FirstOrDefaultAsync();
-			if (odlFileDetails == null)
+			if (odlFileDetails == default)
 			{
-				throw new GridFSFileNotFoundException(details.Id);
+				throw new FilesApiException("No File found for given Id");
 			}
+
 			var filter = Builders<FileDetails>.Filter.Eq("Id", details.Id);
 
 			var update = Builders<FileDetails>.Update
@@ -109,6 +119,11 @@ namespace Services
 
 		public async Task<FileDetails> UploadFileAsync(Stream stream, FileDetails fileDetails)
 		{
+			if (fileDetails == null)
+			{
+				throw new FilesApiException("FileDetails no provided to upload function.");
+			}
+
 			using var fileHelper = new FileHelper(stream, fileDetails.Name);
 			var hashId = SHA256CheckSum(fileHelper.GetFilePath());
 			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
@@ -118,7 +133,7 @@ namespace Services
 			if (existingFile != default)
 			{
 				fileDetails.Id = Guid.NewGuid().ToString();
-				fileDetails.SharedStorageId = existingFile.SharedStorageId;
+				fileDetails.StorageId = existingFile.StorageId;
 				fileDetails.HashId = hashId;
 				await collection.InsertOneAsync(fileDetails);
 				return fileDetails;
@@ -126,7 +141,7 @@ namespace Services
 			using var fileStream = File.OpenRead(fileHelper.GetFilePath());
 			var id = await fsBucket.UploadFromStreamAsync(fileDetails.Name, fileStream);
 			fileDetails.Id = Guid.NewGuid().ToString();
-			fileDetails.SharedStorageId = id.ToString();
+			fileDetails.StorageId = id.ToString();
 			fileDetails.HashId = hashId;
 
 			await collection.InsertOneAsync(fileDetails);

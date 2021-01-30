@@ -1,8 +1,12 @@
 ﻿using Contracts;
+using FilesAPI.ViewModels;
+using FilesAPI.ViewModels.Mapper;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Commands;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FilesAPI.Controllers
@@ -21,7 +25,7 @@ namespace FilesAPI.Controllers
 		//Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
 		[HttpPost]
 		[DisableRequestSizeLimit]
-		public async Task<IActionResult> UploadFile([FromForm] UploadImageCommand imageCommand)
+		public async Task<ActionResult<FileDetailsViewModels>> UploadFile([FromForm] UploadImageCommand imageCommand)
 		{
 			var file = imageCommand.File;
 			if (file.Length > 0)
@@ -37,11 +41,12 @@ namespace FilesAPI.Controllers
 					Tags = imageCommand.Tags
 				};
 
-				return Ok(await _storageService.UploadFileAsync(file.OpenReadStream(), details));
+				var fileDetails = await _storageService.UploadFileAsync(file.OpenReadStream(), details);
+				return Ok(ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(fileDetails));
 			}
 			else
 			{
-				return BadRequest();
+				return BadRequest("File is required.");
 			}
 		}
 
@@ -66,28 +71,32 @@ namespace FilesAPI.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> GetAllFileDetails()
+		public async Task<ActionResult<IEnumerable<FileDetailsViewModels>>> GetAllFileDetails()
 		{
-			return Ok(await _storageService.GetAllFileDetailsAsync());
+			var fileDetailsList = await _storageService.GetAllFileDetailsAsync();
+			return Ok(fileDetailsList.Select(a => ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(a)));
 		}
 
 		[HttpGet("details/{id}")]
-		public async Task<IActionResult> GetFileDetails(string id)
+		public async Task<ActionResult<FileDetailsViewModels>> GetFileDetails(string id)
 		{
-			return Ok(await _storageService.GetFileDetailsAsync(id));
+			var fileDetails = await _storageService.GetFileDetailsAsync(id);
+			return Ok(ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(fileDetails));
 		}
 
 		[HttpPut("details/{id}")]
-		public async Task<IActionResult> UpdateFileDetails(FileDetails details, string id)
+		public async Task<ActionResult<FileDetailsViewModels>> UpdateFileDetails(FileDetails details, string id)
 		{
 			details.Id = id;
-			return Ok(await _storageService.UpdateFileDetailsAsync(details));
+			var fileDetails = await _storageService.UpdateFileDetailsAsync(details);
+			return Ok(ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(fileDetails));
 		}
 
 		[HttpGet("details/tags/{tag}")]
-		public async Task<IActionResult> GetFileDetailsByTag(string tag)
+		public async Task<ActionResult<IEnumerable<FileDetailsViewModels>>> GetFileDetailsByTag(string tag)
 		{
-			return Ok(await _storageService.GetFileDetailsByTagAsync(tag));
+			var fileDetailsList = await _storageService.GetFileDetailsByTagAsync(tag);
+			return Ok(fileDetailsList.Select(a => ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(a)));
 		}
 
 		[HttpDelete("{id}")]

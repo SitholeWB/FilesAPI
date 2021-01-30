@@ -1,13 +1,17 @@
 ﻿using Contracts;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Models.Exceptions;
 using Models.Settings;
+using Newtonsoft.Json;
 using Services;
 
 namespace FilesAPI
@@ -90,8 +94,20 @@ namespace FilesAPI
 			});
 
 			app.UseHttpsRedirection();
-
 			app.UseRouting();
+
+			app.UseExceptionHandler(a => a.Run(async context =>
+			{
+				var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+				var exception = exceptionHandlerPathFeature.Error;
+				if (exception is FilesApiException)
+				{
+					var result = JsonConvert.SerializeObject(new { error = exception.Message });
+					context.Response.ContentType = "application/json";
+					context.Response.StatusCode = StatusCodes.Status400BadRequest;
+					await context.Response.WriteAsync(result);
+				}
+			}));
 
 			app.UseEndpoints(endpoints =>
 			{
