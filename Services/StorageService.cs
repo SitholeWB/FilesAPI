@@ -145,7 +145,7 @@ namespace Services
 			fileDetails.HashId = hashId;
 
 			await collection.InsertOneAsync(fileDetails);
-
+			await CreateIndexesAsync();
 			return fileDetails;
 		}
 
@@ -154,6 +154,15 @@ namespace Services
 			using var SHA256 = SHA256Managed.Create();
 			using var fileStream = File.OpenRead(filePath);
 			return Convert.ToBase64String(SHA256.ComputeHash(fileStream));
+		}
+
+		private async Task CreateIndexesAsync()
+		{
+			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var indexKeysDefinition1 = Builders<FileDetails>.IndexKeys.Hashed(fileDetails => fileDetails.HashId);
+			var indexKeysDefinition2 = Builders<FileDetails>.IndexKeys.Hashed(fileDetails => fileDetails.StorageId);
+			var indexes = new List<CreateIndexModel<FileDetails>> { new CreateIndexModel<FileDetails>(indexKeysDefinition1), new CreateIndexModel<FileDetails>(indexKeysDefinition2) };
+			await collection.Indexes.CreateManyAsync(indexes);
 		}
 	}
 }
