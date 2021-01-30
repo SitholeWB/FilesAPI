@@ -9,10 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Models.Events;
 using Models.Exceptions;
 using Models.Settings;
 using Newtonsoft.Json;
 using Services;
+using Services.Events;
+using Services.Events.Handlers;
 
 namespace FilesAPI
 {
@@ -68,6 +71,10 @@ namespace FilesAPI
 			//services.AddSingleton<IStorageService, FilesService>();
 			services.AddTransient<IStorageService, StorageService>();
 			services.AddSingleton<ISettingsService, SettingsService>();
+
+			services.AddScoped<RecordDownloadHandler>();
+			services.AddScoped<EventHandlerContainer>();
+			EventHandlerContainer.Subscribe<FileDownloadedEvent, RecordDownloadHandler>();
 
 			services.AddControllers();
 		}

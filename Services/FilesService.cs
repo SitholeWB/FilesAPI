@@ -45,6 +45,11 @@ namespace Services
 			});
 		}
 
+		public Task IncrementDownloadCountAsync(string id)
+		{
+			throw new NotImplementedException();
+		}
+
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
 		{
 			return await Task.Run(() =>

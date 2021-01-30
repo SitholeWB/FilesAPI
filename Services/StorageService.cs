@@ -1,9 +1,11 @@
 ﻿using Contracts;
 using Models;
+using Models.Events;
 using Models.Exceptions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
+using Services.Events;
 using Services.Helpers;
 using System;
 using System.Collections.Generic;
@@ -21,13 +23,15 @@ namespace Services
 		private readonly GridFSBucket fsBucket = null;
 
 		private readonly IMongoDatabase fileInfoDB = null;
+		private readonly EventHandlerContainer _eventContainer;
 
-		public StorageService(ISettingsService settingsService)
+		public StorageService(ISettingsService settingsService, EventHandlerContainer eventContainer)
 		{
 			var client = new MongoClient(settingsService.GetMongoDBAppSettings().ConnectionString);
 			fileInfoDB = client.GetDatabase(fileInfoDbName);
 			var db = client.GetDatabase(fileBucketDbName);
 			fsBucket = new GridFSBucket(db, new GridFSBucketOptions { BucketName = bucket });
+			_eventContainer = eventContainer;
 		}
 
 		public async Task<string> DeleteFileAsync(string id)
@@ -64,14 +68,22 @@ namespace Services
 			{
 				throw new FilesApiException("No File found for given Id");
 			}
+			await _eventContainer.PublishAsync(new FileDownloadedEvent { FileDetails = fileDetails });
+			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(fileDetails.StorageId)), fileDetails);
+		}
+
+		public async Task IncrementDownloadCountAsync(string id)
+		{
+			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
+			var fileDetails = await results.FirstOrDefaultAsync();
+
 			var filter = Builders<FileDetails>.Filter.Eq("Id", id);
 			var update = Builders<FileDetails>.Update
 			.Set("NumberOfDownloads", fileDetails.NumberOfDownloads + 1)
 			.CurrentDate("LastModified");
 
 			await collection.UpdateOneAsync(filter, update);
-
-			return (await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(fileDetails.StorageId)), fileDetails);
 		}
 
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
