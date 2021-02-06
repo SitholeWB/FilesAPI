@@ -17,26 +17,24 @@ namespace Services
 {
 	public sealed class StorageService : IStorageService
 	{
-		private readonly string fileInfoDbName = "FileDetails";
-		private readonly string fileBucketDbName = "FilesAPI";
-		private readonly string bucket = "DEFAULT_BUCKET";
-		private readonly GridFSBucket fsBucket = null;
-
-		private readonly IMongoDatabase fileInfoDB = null;
+		private const string _databaseName = "FilesAPI";
+		private const string _collectionName = "FileDetails";
+		private const string bucket = "Storage";
+		private readonly GridFSBucket fsBucket;
+		private readonly IMongoDatabase _database;
 		private readonly EventHandlerContainer _eventContainer;
 
 		public StorageService(ISettingsService settingsService, EventHandlerContainer eventContainer)
 		{
 			var client = new MongoClient(settingsService.GetMongoDBAppSettings().ConnectionString);
-			fileInfoDB = client.GetDatabase(fileInfoDbName);
-			var db = client.GetDatabase(fileBucketDbName);
-			fsBucket = new GridFSBucket(db, new GridFSBucketOptions { BucketName = bucket });
+			_database = client.GetDatabase(_databaseName);
+			fsBucket = new GridFSBucket(_database, new GridFSBucketOptions { BucketName = bucket });
 			_eventContainer = eventContainer;
 		}
 
 		public async Task<string> DeleteFileAsync(string id)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			var fileDetails = await results.FirstOrDefaultAsync();
 			if (fileDetails == default)
@@ -61,7 +59,7 @@ namespace Services
 
 		public async Task<(Stream, FileDetails)> DownloadFileAsync(string id)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			var fileDetails = await results.FirstOrDefaultAsync();
 			if (fileDetails == default)
@@ -74,7 +72,7 @@ namespace Services
 
 		public async Task IncrementDownloadCountAsync(string id)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			var fileDetails = await results.FirstOrDefaultAsync();
 
@@ -88,20 +86,20 @@ namespace Services
 
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			return await collection.AsQueryable().ToListAsync();
 		}
 
 		public async Task<FileDetails> GetFileDetailsAsync(string id)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(id));
 			return await results.FirstOrDefaultAsync();
 		}
 
 		public async Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var tcBuilder = Builders<FileDetails>.Filter;
 			var tcFilter = tcBuilder.Eq("Tags", tag);
 			var results = await collection.FindAsync(tcFilter);
@@ -110,7 +108,7 @@ namespace Services
 
 		public async Task<FileDetails> UpdateFileDetailsAsync(FileDetails details)
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.Id.Equals(details.Id));
 			var odlFileDetails = await results.FirstOrDefaultAsync();
 
@@ -144,7 +142,7 @@ namespace Services
 
 			using var fileHelper = new FileHelper(stream, fileDetails.Name);
 			var hashId = SHA256CheckSum(fileHelper.GetFilePath());
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var results = await collection.FindAsync(fileInfo => fileInfo.HashId.Equals(hashId));
 			var existingFile = await results.FirstOrDefaultAsync();
 
@@ -176,11 +174,16 @@ namespace Services
 
 		private async Task CreateIndexesAsync()
 		{
-			var collection = fileInfoDB.GetCollection<FileDetails>(fileInfoDbName);
+			var collection = GetCollection();
 			var indexKeysDefinition1 = Builders<FileDetails>.IndexKeys.Hashed(fileDetails => fileDetails.HashId);
 			var indexKeysDefinition2 = Builders<FileDetails>.IndexKeys.Hashed(fileDetails => fileDetails.StorageId);
 			var indexes = new List<CreateIndexModel<FileDetails>> { new CreateIndexModel<FileDetails>(indexKeysDefinition1), new CreateIndexModel<FileDetails>(indexKeysDefinition2) };
 			await collection.Indexes.CreateManyAsync(indexes);
+		}
+
+		private IMongoCollection<FileDetails> GetCollection()
+		{
+			return _database.GetCollection<FileDetails>(_collectionName);
 		}
 	}
 }
