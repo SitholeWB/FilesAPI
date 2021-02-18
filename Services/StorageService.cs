@@ -2,6 +2,7 @@
 using Models;
 using Models.Events;
 using Models.Exceptions;
+using MongoDB.Bson;
 using Services.Events;
 using Services.Helpers;
 using System;
@@ -100,7 +101,7 @@ namespace Services
 
 			if (existingFile != default)
 			{
-				fileDetails.Id = Guid.NewGuid().ToString();
+				fileDetails.Id = ObjectId.GenerateNewId().ToString();
 				fileDetails.StorageId = existingFile.StorageId;
 				fileDetails.HashId = hashId;
 				await _fileDetailsRepository.AddFileDetailsAsync(fileDetails);
@@ -108,7 +109,7 @@ namespace Services
 			}
 			using var fileStream = File.OpenRead(fileHelper.GetFilePath());
 			var id = await _storageRepository.UploadFileAsync(fileStream, fileDetails.Name);
-			fileDetails.Id = Guid.NewGuid().ToString();
+			fileDetails.Id = ObjectId.GenerateNewId().ToString();
 			fileDetails.StorageId = id.ToString();
 			fileDetails.HashId = hashId;
 

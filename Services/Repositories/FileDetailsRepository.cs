@@ -1,6 +1,7 @@
 ﻿using Contracts;
 using Models;
 using Models.Exceptions;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Services.Repositories
 
 		public async Task<FileDetails> AddFileDetailsAsync(FileDetails details)
 		{
-			details.Id = Guid.NewGuid().ToString();
+			details.Id = ObjectId.GenerateNewId().ToString();
 			await _collection.InsertOneAsync(details);
 			await CreateIndexesAsync();
 			return details;

@@ -27,6 +27,7 @@ namespace Services.Helpers
 			{
 				File.Delete(_filePath);
 			}
+			GC.SuppressFinalize(this);
 		}
 	}
 }
