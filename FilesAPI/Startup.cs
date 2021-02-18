@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Services;
 using Services.Events;
 using Services.Events.Handlers;
+using Services.Repositories;
 
 namespace FilesAPI
 {
@@ -69,8 +70,10 @@ namespace FilesAPI
 			services.Configure<LiteDBAppSettings>(Configuration.GetSection("LiteDBAppSettings"));
 
 			//services.AddSingleton<IStorageService, FilesService>();
-			services.AddTransient<IStorageService, StorageService>();
+			services.AddScoped<IStorageService, StorageService>();
 			services.AddSingleton<ISettingsService, SettingsService>();
+			services.AddScoped<IStorageRepository, StorageRepository>();
+			services.AddScoped<IFileDetailsRepository, FileDetailsRepository>();
 
 			services.AddScoped<RecordDownloadHandler>();
 			services.AddScoped<EventHandlerContainer>();

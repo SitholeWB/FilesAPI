@@ -88,7 +88,7 @@ namespace FilesAPI.Controllers
 		public async Task<ActionResult<FileDetailsViewModels>> UpdateFileDetails(FileDetails details, string id)
 		{
 			details.Id = id;
-			var fileDetails = await _storageService.UpdateFileDetailsAsync(details);
+			var fileDetails = await _storageService.UpdateFileDetailsAsync(id, details);
 			return Ok(ViewModelsMapper.ConvertFileDetailsToFileDetailsViewModels(fileDetails));
 		}
 

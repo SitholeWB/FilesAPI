@@ -1,8 +1,5 @@
 ﻿using Contracts;
 using Models.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Events.Handlers
@@ -18,7 +15,7 @@ namespace Services.Events.Handlers
 
 		public async Task RunAsync(FileDownloadedEvent obj)
 		{
-			await _storageService.IncrementDownloadCountAsync(obj.FileDetails.Id);
+			await _storageService.IncrementDownloadCountAsync(obj.FileDetails);
 		}
 	}
 }

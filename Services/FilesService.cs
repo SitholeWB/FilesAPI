@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-	public sealed class FilesService : IStorageService
+	public sealed class FilesService //: IStorageService
 	{
 		private readonly ILiteDatabase _liteDatabase;
 
