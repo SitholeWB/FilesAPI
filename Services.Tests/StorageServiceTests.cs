@@ -71,7 +71,7 @@ namespace Services.Tests
 		[Test]
 		public async Task GetAllFileDetailsAsync_GivenTwoFileDetailsExist_ShouldReturnTwoFileDetails()
 		{
-			//Arragnge
+			//Arrange
 			_fileDetailsRepository.GetAllFileDetailsAsync().Returns(a => _fileDetailsList);
 
 			//Act
@@ -97,7 +97,7 @@ namespace Services.Tests
 		[Test]
 		public async Task GetFileDetailsAsync_GivenTwoFileDetailsExist_ShouldReturnOneFileDetailsForGivenId()
 		{
-			//Arragnge
+			//Arrange
 			_fileDetailsRepository.GetFileDetailsAsync(Arg.Any<string>()).Returns(args => _fileDetailsList.FirstOrDefault(a => a.Id == args[0].ToString()));
 
 			//Act
