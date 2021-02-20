@@ -94,6 +94,18 @@ namespace Services.Tests
 			Assert.IsTrue(results.Any(a => a.StorageId == _fileDetails2.StorageId));
 		}
 
+		public async Task GetAllFileDetailsAsync_GivenNoFileDetailsExist_ShouldReturnEmptyFileDetailsList()
+		{
+			//Arrange
+			_fileDetailsRepository.GetAllFileDetailsAsync().Returns(a => Enumerable.Empty<FileDetails>());
+
+			//Act
+			var results = await _storageService.GetAllFileDetailsAsync();
+
+			//Assert
+			Assert.AreEqual(0, results.Count());
+		}
+
 		[Test]
 		public async Task GetFileDetailsAsync_GivenTwoFileDetailsExist_ShouldReturnOneFileDetailsForGivenId()
 		{
@@ -110,6 +122,50 @@ namespace Services.Tests
 			Assert.AreEqual(results.HashId, _fileDetails.HashId);
 			Assert.AreEqual(results.Size, _fileDetails.Size);
 			Assert.AreEqual(results.StorageId, _fileDetails.StorageId);
+		}
+
+		[Test]
+		public async Task GetFileDetailsAsync_GivenIdDonnotExist_ShouldReturnNull()
+		{
+			//Arrange
+			_fileDetailsRepository.GetFileDetailsAsync(Arg.Any<string>()).Returns(args => _fileDetailsList.FirstOrDefault(a => a.Id == args[0].ToString()));
+
+			//Act
+			var results = await _storageService.GetFileDetailsAsync(Guid.NewGuid().ToString());
+
+			//Assert
+			Assert.IsNull(results);
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[Test]
+		public async Task GetFileDetailsByTagAsync_GivenTagExist_ShouldReturnFileDetailsForTag(int tagIndex)
+		{
+			//Arrange
+			_fileDetailsRepository.GetFileDetailsByTagAsync(Arg.Any<string>()).Returns(args => _fileDetailsList.Where(a => a.Tags.Contains(args[0].ToString())));
+			var tag = _fileDetails.Tags.ElementAt(tagIndex);
+			//Act
+
+			var results = await _storageService.GetFileDetailsByTagAsync(tag);
+
+			//Assert
+			Assert.IsTrue(results.Any(a => a.Tags.Contains(tag)));
+		}
+
+		[Test]
+		public async Task GetFileDetailsByTagAsync_GivenTagDonnotExist_ShouldReturnEmptyFileDetailsList()
+		{
+			//Arrange
+			_fileDetailsRepository.GetFileDetailsByTagAsync(Arg.Any<string>()).Returns(args => _fileDetailsList.Where(a => a.Tags.Contains(args[0].ToString())));
+			var tag = Guid.NewGuid().ToString();
+
+			//Act
+
+			var results = await _storageService.GetFileDetailsByTagAsync(tag);
+
+			//Assert
+			Assert.IsFalse(results.Any(a => a.Tags.Contains(tag)));
 		}
 	}
 }
