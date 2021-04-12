@@ -92,10 +92,7 @@ namespace FilesAPI
 			{
 				app.UseDeveloperExceptionPage();
 			}
-			else
-			{
-				swaggerUrl = "/FilesAPI/swagger/v1/swagger.json";//For IIS hosting
-			}
+
 			app.UseSwagger();
 			app.UseSwaggerUI(c =>
 			{
