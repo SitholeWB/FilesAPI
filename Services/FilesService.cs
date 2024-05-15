@@ -45,12 +45,31 @@ namespace Services
 			});
 		}
 
-		public Task IncrementDownloadCountAsync(string id)
-		{
-			throw new NotImplementedException();
-		}
+        public async Task IncrementDownloadCountAsync(string id)
+        {
+            await Task.Run(() =>
+            {
+                var collection = _liteDatabase.GetCollection<FileDetails>("FileDetails");
+                var fileDetails = collection.FindById(id);
+                if (fileDetails != null)
+                {
+                    // Increment the download count
+                    fileDetails.DownloadCount++;
+                    // Update the file details in the collection
+                    var success = collection.Update(fileDetails);
+                    if (!success)
+                    {
+                        throw new Exception("Error while updating download count");
+                    }
+                }
+                else
+                {
+                    throw new Exception("File not found");
+                }
+            });
+        }
 
-		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
+        public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
 		{
 			return await Task.Run(() =>
 		   {
@@ -92,16 +111,13 @@ namespace Services
 			});
 		}
 
-		public async Task<FileDetails> UploadFileAsync(Stream fileStream, FileDetails fileDetails)
-		{
-			return await Task.Run(() =>
-			{
-				var collection = _liteDatabase.GetCollection<FileDetails>("FileDetails");
-				fileDetails.Id = ObjectId.NewObjectId().ToString();
-				collection.Insert(fileDetails.Id, fileDetails);
-				var obj = _liteDatabase.FileStorage.Upload(fileDetails.Id, fileDetails.Name, fileStream);
-				return fileDetails;
-			});
-		}
-	}
+        public async Task<FileDetails> UploadFileAsync(Stream fileStream, FileDetails fileDetails)
+        {
+            var collection = _liteDatabase.GetCollection<FileDetails>("FileDetails");
+            fileDetails.Id = ObjectId.NewObjectId().ToString();
+            collection.Insert(fileDetails.Id, fileDetails);
+            var obj = _liteDatabase.FileStorage.Upload(fileDetails.Id, fileDetails.Name, fileStream);
+            return fileDetails;
+        }
+    }
 }
