@@ -1,4 +1,4 @@
-﻿using Contracts;
+using Contracts;
 using Models;
 using Models.Exceptions;
 using MongoDB.Bson;
@@ -43,7 +43,8 @@ namespace Services.Repositories
 
 		public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
 		{
-			return await _collection.AsQueryable().ToListAsync();
+			var results = await _collection.FindAsync(_ => true);
+			return await results.ToListAsync();
 		}
 
 		public async Task<FileDetails> GetFileDetailsAsync(string id)

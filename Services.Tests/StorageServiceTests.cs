@@ -3,6 +3,7 @@ using Models;
 using MongoDB.Bson;
 using NSubstitute;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Services.Events;
 using System;
 using System.Collections.Generic;
@@ -78,20 +79,20 @@ namespace Services.Tests
 			var results = await _storageService.GetAllFileDetailsAsync();
 
 			//Assert
-			Assert.AreEqual(2, results.Count());
-			Assert.IsTrue(results.Any(a => a.Id == _fileDetails.Id));
-			Assert.IsTrue(results.Any(a => a.Name == _fileDetails.Name));
-			Assert.IsTrue(results.Any(a => a.Description == _fileDetails.Description));
-			Assert.IsTrue(results.Any(a => a.HashId == _fileDetails.HashId));
-			Assert.IsTrue(results.Any(a => a.Size == _fileDetails.Size));
-			Assert.IsTrue(results.Any(a => a.StorageId == _fileDetails.StorageId));
+			ClassicAssert.AreEqual(2, results.Count());
+			ClassicAssert.IsTrue(results.Any(a => a.Id == _fileDetails.Id));
+			ClassicAssert.IsTrue(results.Any(a => a.Name == _fileDetails.Name));
+			ClassicAssert.IsTrue(results.Any(a => a.Description == _fileDetails.Description));
+			ClassicAssert.IsTrue(results.Any(a => a.HashId == _fileDetails.HashId));
+			ClassicAssert.IsTrue(results.Any(a => a.Size == _fileDetails.Size));
+			ClassicAssert.IsTrue(results.Any(a => a.StorageId == _fileDetails.StorageId));
 
-			Assert.IsTrue(results.Any(a => a.Id == _fileDetails2.Id));
-			Assert.IsTrue(results.Any(a => a.Name == _fileDetails2.Name));
-			Assert.IsTrue(results.Any(a => a.Description == _fileDetails2.Description));
-			Assert.IsTrue(results.Any(a => a.HashId == _fileDetails2.HashId));
-			Assert.IsTrue(results.Any(a => a.Size == _fileDetails2.Size));
-			Assert.IsTrue(results.Any(a => a.StorageId == _fileDetails2.StorageId));
+			ClassicAssert.IsTrue(results.Any(a => a.Id == _fileDetails2.Id));
+			ClassicAssert.IsTrue(results.Any(a => a.Name == _fileDetails2.Name));
+			ClassicAssert.IsTrue(results.Any(a => a.Description == _fileDetails2.Description));
+			ClassicAssert.IsTrue(results.Any(a => a.HashId == _fileDetails2.HashId));
+			ClassicAssert.IsTrue(results.Any(a => a.Size == _fileDetails2.Size));
+			ClassicAssert.IsTrue(results.Any(a => a.StorageId == _fileDetails2.StorageId));
 		}
 
 		public async Task GetAllFileDetailsAsync_GivenNoFileDetailsExist_ShouldReturnEmptyFileDetailsList()
@@ -103,7 +104,7 @@ namespace Services.Tests
 			var results = await _storageService.GetAllFileDetailsAsync();
 
 			//Assert
-			Assert.AreEqual(0, results.Count());
+			ClassicAssert.AreEqual(0, results.Count());
 		}
 
 		[Test]
@@ -116,12 +117,12 @@ namespace Services.Tests
 			var results = await _storageService.GetFileDetailsAsync(_fileDetails.Id);
 
 			//Assert
-			Assert.AreEqual(results.Id, _fileDetails.Id);
-			Assert.AreEqual(results.Name, _fileDetails.Name);
-			Assert.AreEqual(results.Description, _fileDetails.Description);
-			Assert.AreEqual(results.HashId, _fileDetails.HashId);
-			Assert.AreEqual(results.Size, _fileDetails.Size);
-			Assert.AreEqual(results.StorageId, _fileDetails.StorageId);
+			ClassicAssert.AreEqual(results.Id, _fileDetails.Id);
+			ClassicAssert.AreEqual(results.Name, _fileDetails.Name);
+			ClassicAssert.AreEqual(results.Description, _fileDetails.Description);
+			ClassicAssert.AreEqual(results.HashId, _fileDetails.HashId);
+			ClassicAssert.AreEqual(results.Size, _fileDetails.Size);
+			ClassicAssert.AreEqual(results.StorageId, _fileDetails.StorageId);
 		}
 
 		[Test]
@@ -134,7 +135,7 @@ namespace Services.Tests
 			var results = await _storageService.GetFileDetailsAsync(Guid.NewGuid().ToString());
 
 			//Assert
-			Assert.IsNull(results);
+			ClassicAssert.IsNull(results);
 		}
 
 		[TestCase(0)]
@@ -150,7 +151,7 @@ namespace Services.Tests
 			var results = await _storageService.GetFileDetailsByTagAsync(tag);
 
 			//Assert
-			Assert.IsTrue(results.Any(a => a.Tags.Contains(tag)));
+			ClassicAssert.IsTrue(results.Any(a => a.Tags.Contains(tag)));
 		}
 
 		[Test]
@@ -165,7 +166,7 @@ namespace Services.Tests
 			var results = await _storageService.GetFileDetailsByTagAsync(tag);
 
 			//Assert
-			Assert.IsFalse(results.Any(a => a.Tags.Contains(tag)));
+			ClassicAssert.IsFalse(results.Any(a => a.Tags.Contains(tag)));
 		}
 	}
 }

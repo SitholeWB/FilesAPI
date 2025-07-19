@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # MongoDB database service
+  mongodb:
+    image: mongo:7.0
+    container_name: filesapi-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: filesapi
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - filesapi-network
+
+  # FilesAPI web service
+  filesapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filesapi-web
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=mongodb://admin:password123@mongodb:27017/filesapi?authSource=admin
+      - MongoDB__ConnectionString=mongodb://admin:password123@mongodb:27017/filesapi?authSource=admin
+      - MongoDB__DatabaseName=filesapi
+      # Analytics configuration
+      - ANALYTICS_ENABLED=true
+      - ANALYTICS_RETENTION_DAYS=365
+    ports:
+      - "5100:8080"
+    volumes:
+      - filesapi_uploads:/app/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - filesapi-network
+
+  # MongoDB Express (optional - for database management)
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: filesapi-mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password123
+      ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
+      ME_CONFIG_BASICAUTH: false
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - filesapi-network
+
+# Named volumes for data persistence
+volumes:
+  mongodb_data:
+    driver: local
+  filesapi_uploads:
+    driver: local
+
+# Network for service communication
+networks:
+  filesapi-network:
+    driver: bridge

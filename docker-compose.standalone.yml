@@ -1,0 +1,44 @@
+version: '3.8'
+
+# Self-contained FilesAPI with embedded LiteDB database
+# No external dependencies required - completely portable
+services:
+  filesapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filesapi-standalone
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - ASPNETCORE_HTTP_PORTS=8080
+      - USE_EMBEDDED_DATABASE=true
+      - DATABASE_PATH=/app/data/filesapi.db
+      - UPLOADS_PATH=/app/uploads
+      - DOTNET_RUNNING_IN_CONTAINER=true
+      # Analytics configuration
+      - ANALYTICS_ENABLED=true
+      - ANALYTICS_RETENTION_DAYS=365
+    ports:
+      - "5100:8080"
+    volumes:
+      # Persist data and uploads
+      - filesapi_data:/app/data
+      - filesapi_uploads:/app/uploads
+      - filesapi_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Named volumes for data persistence
+volumes:
+  filesapi_data:
+    driver: local
+  filesapi_uploads:
+    driver: local
+  filesapi_logs:
+    driver: local

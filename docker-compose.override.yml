@@ -1,0 +1,18 @@
+version: '3.8'
+
+# Development overrides for docker-compose.yml
+services:
+  filesapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    volumes:
+      # Mount source code for hot reload during development
+      - ./FilesAPI:/app/src/FilesAPI:ro
+      - ./Services:/app/src/Services:ro
+      - ./Models:/app/src/Models:ro
+      - ./Contracts:/app/src/Contracts:ro
+    # Enable debugging
+    ports:
+      - "5100:8080"
+      - "5101:8081"  # Debug port

@@ -1,4 +1,4 @@
-﻿using Contracts;
+using Contracts;
 using Models;
 using Models.Events;
 using Models.Exceptions;
@@ -119,9 +119,9 @@ namespace Services
 
 		public string SHA256CheckSum(string filePath)
 		{
-			using var SHA256 = SHA256Managed.Create();
+			using var sha256 = SHA256.Create();
 			using var fileStream = File.OpenRead(filePath);
-			return Convert.ToBase64String(SHA256.ComputeHash(fileStream));
+			return Convert.ToBase64String(sha256.ComputeHash(fileStream));
 		}
 	}
 }
