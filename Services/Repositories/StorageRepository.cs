@@ -1,4 +1,4 @@
-﻿using Contracts;
+using Contracts;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;

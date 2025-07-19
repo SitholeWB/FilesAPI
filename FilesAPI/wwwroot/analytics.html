@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FilesAPI Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            color: #667eea;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .popular-files {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .file-meta {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .download-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Real-time download statistics and insights</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Overview</h2>
+                    <button class="refresh-btn" onclick="loadDashboard()">🔄 Refresh</button>
+                </div>
+                
+                <div id="loading" class="loading">
+                    <p>Loading analytics data...</p>
+                </div>
+                
+                <div id="error" class="error" style="display: none;">
+                    <p>Failed to load analytics data. Please try again.</p>
+                </div>
+                
+                <div id="stats-grid" class="stats-grid" style="display: none;">
+                    <!-- Stats will be populated here -->
+                </div>
+            </div>
+            
+            <div class="section" id="popular-section" style="display: none;">
+                <h2>🔥 Most Popular Files</h2>
+                <div id="popular-files" class="popular-files">
+                    <!-- Popular files will be populated here -->
+                </div>
+            </div>
+            
+            <div class="section" id="activity-section" style="display: none;">
+                <h2>📈 Recent Activity (Last 7 Days)</h2>
+                <div id="recent-activity" class="chart-container">
+                    <!-- Recent activity will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const statsGrid = document.getElementById('stats-grid');
+            const popularSection = document.getElementById('popular-section');
+            const activitySection = document.getElementById('activity-section');
+            
+            // Show loading
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            statsGrid.style.display = 'none';
+            popularSection.style.display = 'none';
+            activitySection.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/analytics/dashboard');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch analytics data');
+                }
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                // Populate overview stats
+                populateOverview(data.overview);
+                statsGrid.style.display = 'grid';
+                
+                // Populate popular files
+                populatePopularFiles(data.popularFiles);
+                popularSection.style.display = 'block';
+                
+                // Populate recent activity
+                populateRecentActivity(data.recentActivity);
+                activitySection.style.display = 'block';
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                console.error('Error loading dashboard:', err);
+            }
+        }
+        
+        function populateOverview(overview) {
+            const statsGrid = document.getElementById('stats-grid');
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <h3>Total Downloads</h3>
+                    <div class="value">${overview.totalDownloads.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Files</h3>
+                    <div class="value">${overview.totalFiles.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Data Downloaded</h3>
+                    <div class="value">${formatBytes(overview.totalBytesDownloaded)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Downloads/Day</h3>
+                    <div class="value">${Math.round(overview.averageDownloadsPerDay)}</div>
+                </div>
+            `;
+        }
+        
+        function populatePopularFiles(popularFiles) {
+            const container = document.getElementById('popular-files');
+            
+            if (!popularFiles || popularFiles.length === 0) {
+                container.innerHTML = '<div class="file-item"><div class="file-info">No download data available yet.</div></div>';
+                return;
+            }
+            
+            container.innerHTML = popularFiles.map(file => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-name">${file.fileName}</div>
+                        <div class="file-meta">
+                            Size: ${formatBytes(file.fileSize)} • 
+                            Last downloaded: ${new Date(file.lastDownloaded).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="download-count">${file.downloadCount}</div>
+                </div>
+            `).join('');
+        }
+        
+        function populateRecentActivity(recentActivity) {
+            const container = document.getElementById('recent-activity');
+            
+            if (!recentActivity || recentActivity.length === 0) {
+                container.innerHTML = '<p>No recent activity data available.</p>';
+                return;
+            }
+            
+            const chartData = recentActivity.map(day => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
+                    <div>
+                        <strong>${new Date(day.date).toLocaleDateString()}</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <div>${day.downloadCount} downloads</div>
+                        <div style="font-size: 0.9rem; color: #666;">${formatBytes(day.bytesDownloaded)} • ${day.uniqueFiles} files</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = chartData;
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

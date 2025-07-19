@@ -1,7 +1,8 @@
-﻿using Contracts;
+using Contracts;
 using FilesAPI.ViewModels;
 using FilesAPI.ViewModels.Mapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Models;
 using Models.Commands;
 using System;
@@ -50,13 +51,36 @@ namespace FilesAPI.Controllers
 			}
 		}
 
-		[HttpGet("{id}")]
+		[HttpGet("{id}/download")]
 		public async Task<IActionResult> DownLoadFile(string id)
 		{
 			var (content, details) = await _storageService.DownloadFileAsync(id);
+			
+			// Record analytics
+			var userAgent = Request.Headers["User-Agent"].ToString();
+			var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+			var referrer = Request.Headers["Referer"].ToString();
+			
+			// Fire and forget analytics recording
+			_ = Task.Run(async () =>
+			{
+				try
+				{
+					var analyticsService = HttpContext.RequestServices.GetService<IAnalyticsService>();
+					if (analyticsService != null)
+					{
+						await analyticsService.RecordDownloadAsync(id, userAgent, ipAddress, referrer, "download");
+					}
+				}
+				catch
+				{
+					// Ignore analytics errors to not affect file download
+				}
+			});
+			
 			this.Response.ContentLength = details.Size;
-			this.Response.Headers.Add("Accept-Ranges", "bytes");
-			this.Response.Headers.Add("Content-Range", "bytes 0-" + details.Size);
+			this.Response.Headers["Accept-Ranges"] = "bytes";
+			this.Response.Headers["Content-Range"] = "bytes 0-" + details.Size;
 			return File(content, details.ContentType, details.Name);
 		}
 
@@ -64,9 +88,32 @@ namespace FilesAPI.Controllers
 		public async Task<FileStreamResult> DownloadView(string id)
 		{
 			var (stream, details) = await _storageService.DownloadFileAsync(id);
+			
+			// Record analytics for view
+			var userAgent = Request.Headers["User-Agent"].ToString();
+			var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+			var referrer = Request.Headers["Referer"].ToString();
+			
+			// Fire and forget analytics recording
+			_ = Task.Run(async () =>
+			{
+				try
+				{
+					var analyticsService = HttpContext.RequestServices.GetService<IAnalyticsService>();
+					if (analyticsService != null)
+					{
+						await analyticsService.RecordDownloadAsync(id, userAgent, ipAddress, referrer, "view");
+					}
+				}
+				catch
+				{
+					// Ignore analytics errors to not affect file download
+				}
+			});
+			
 			this.Response.ContentLength = details.Size;
-			this.Response.Headers.Add("Accept-Ranges", "bytes");
-			this.Response.Headers.Add("Content-Range", "bytes 0-" + details.Size);
+			this.Response.Headers["Accept-Ranges"] = "bytes";
+			this.Response.Headers["Content-Range"] = "bytes 0-" + details.Size;
 			return new FileStreamResult(stream, details.ContentType);
 		}
 

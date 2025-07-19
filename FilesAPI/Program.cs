@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
@@ -18,7 +18,7 @@ namespace FilesAPI
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
 					webBuilder.UseStartup<Startup>();
-					webBuilder.UseUrls("http://localhost:5100/");
+					// URLs are configured via environment variables (ASPNETCORE_URLS)
 				});
 	}
 }
