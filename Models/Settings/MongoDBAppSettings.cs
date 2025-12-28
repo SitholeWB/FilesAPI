@@ -1,11 +1,11 @@
-﻿namespace Models.Settings
+﻿namespace Models;
+
+public class MongoDBAppSettings
 {
-	public class MongoDBAppSettings
-	{
-		public MongoDBAppSettings()
-		{
-			ConnectionString = "mongodb://localhost:27017";
-		}
-		public string ConnectionString { get; set; }
-	}
+    public MongoDBAppSettings()
+    {
+        ConnectionString = "mongodb://localhost:27017";
+    }
+
+    public string ConnectionString { get; set; }
 }

@@ -1,10 +1,8 @@
-﻿using Models.Settings;
+﻿namespace Contracts;
 
-namespace Contracts
+public interface ISettingsService
 {
-	public interface ISettingsService
-	{
-		MongoDBAppSettings GetMongoDBAppSettings();
-		LiteDBAppSettings GetLiteDBAppSettings();
-	}
+    MongoDBAppSettings GetMongoDBAppSettings();
+
+    LiteDBAppSettings GetLiteDBAppSettings();
 }

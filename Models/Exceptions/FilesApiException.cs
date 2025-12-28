@@ -1,15 +1,12 @@
-using System;
+namespace Models;
 
-namespace Models.Exceptions
+public sealed class FilesApiException : Exception
 {
-	public sealed class FilesApiException : Exception
-	{
-		public FilesApiException(string message) : base(message)
-		{
-		}
+    public FilesApiException(string message) : base(message)
+    {
+    }
 
-		public FilesApiException(string message, Exception innerException) : base(message, innerException)
-		{
-		}
-	}
+    public FilesApiException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

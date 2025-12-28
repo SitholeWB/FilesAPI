@@ -1,21 +1,16 @@
-﻿using Contracts;
-using Models.Events;
-using System.Threading.Tasks;
+﻿namespace Services;
 
-namespace Services.Events.Handlers
+public class RecordDownloadHandler : IEventHandler<FileDownloadedEvent>
 {
-	public class RecordDownloadHandler : IEventHandler<FileDownloadedEvent>
-	{
-		private readonly IStorageService _storageService;
+    private readonly IStorageService _storageService;
 
-		public RecordDownloadHandler(IStorageService storageService)
-		{
-			_storageService = storageService;
-		}
+    public RecordDownloadHandler(IStorageService storageService)
+    {
+        _storageService = storageService;
+    }
 
-		public async Task RunAsync(FileDownloadedEvent obj)
-		{
-			await _storageService.IncrementDownloadCountAsync(obj.FileDetails);
-		}
-	}
+    public async Task RunAsync(FileDownloadedEvent obj, CancellationToken token)
+    {
+        await _storageService.IncrementDownloadCountAsync(obj.FileDetails, token);
+    }
 }

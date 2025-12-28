@@ -1,39 +1,34 @@
-using Contracts;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
-using System.IO;
-using System.Threading.Tasks;
+using ObjectId = MongoDB.Bson.ObjectId;
 
-namespace Services.Repositories
+namespace Services;
+
+public class MongoStorageRepository : IStorageRepository
 {
-    public class MongoStorageRepository : IStorageRepository
+    private const string _databaseName = "FilesAPI";
+    private const string bucket = "Storage";
+    private readonly GridFSBucket fsBucket;
+
+    public MongoStorageRepository(ISettingsService settingsService)
     {
-        private const string _databaseName = "FilesAPI";
-        private const string bucket = "Storage";
-        private readonly GridFSBucket fsBucket;
+        var client = new MongoClient(settingsService.GetMongoDBAppSettings().ConnectionString);
+        var database = client.GetDatabase(_databaseName);
+        fsBucket = new GridFSBucket(database, new GridFSBucketOptions { BucketName = bucket });
+    }
 
-        public MongoStorageRepository(ISettingsService settingsService)
-        {
-            var client = new MongoClient(settingsService.GetMongoDBAppSettings().ConnectionString);
-            var database = client.GetDatabase(_databaseName);
-            fsBucket = new GridFSBucket(database, new GridFSBucketOptions { BucketName = bucket });
-        }
+    public async Task DeleteFileAsync(string id, CancellationToken token)
+    {
+        await fsBucket.DeleteAsync(ObjectId.Parse(id), token);
+    }
 
-        public async Task DeleteFileAsync(string id)
-        {
-            await fsBucket.DeleteAsync(ObjectId.Parse(id));
-        }
+    public async Task<Stream> DownloadFileAsync(string id, CancellationToken token)
+    {
+        return await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(id), cancellationToken: token);
+    }
 
-        public async Task<Stream> DownloadFileAsync(string id)
-        {
-            return await fsBucket.OpenDownloadStreamAsync(ObjectId.Parse(id));
-        }
-
-        public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
-        {
-            var id = await fsBucket.UploadFromStreamAsync(fileName, fileStream);
-            return id.ToString();
-        }
+    public async Task<string> UploadFileAsync(Stream fileStream, string fileName, CancellationToken token)
+    {
+        var id = await fsBucket.UploadFromStreamAsync(fileName, fileStream, cancellationToken: token);
+        return id.ToString();
     }
 }

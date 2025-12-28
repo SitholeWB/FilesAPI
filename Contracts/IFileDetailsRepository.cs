@@ -1,23 +1,18 @@
-﻿using Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿namespace Contracts;
 
-namespace Contracts
+public interface IFileDetailsRepository
 {
-	public interface IFileDetailsRepository
-	{
-		Task<FileDetails> AddFileDetailsAsync(FileDetails details);
+    Task<FileDetails> AddFileDetailsAsync(FileDetails details, CancellationToken token);
 
-		Task<FileDetails> UpdateFileDetailsAsync(string id, FileDetails details);
+    Task<FileDetails> UpdateFileDetailsAsync(string id, FileDetails details, CancellationToken token);
 
-		Task<FileDetails> GetFileDetailsAsync(string id);
+    Task<FileDetails> GetFileDetailsAsync(string id, CancellationToken token);
 
-		Task<FileDetails> GetFileDetailsByHashIdAsync(string hashId);
+    Task<FileDetails> GetFileDetailsByHashIdAsync(string hashId, CancellationToken token);
 
-		Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync();
+    Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync(CancellationToken token);
 
-		Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag);
+    Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag, CancellationToken token);
 
-		Task DeleteFileAsync(string id);
-	}
+    Task DeleteFileAsync(string id, CancellationToken token);
 }

@@ -13,4 +13,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.Metrics" />
+  </ItemGroup>
+
 </Project>

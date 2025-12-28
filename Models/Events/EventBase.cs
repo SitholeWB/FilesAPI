@@ -1,18 +1,15 @@
-﻿using System;
+﻿namespace Models;
 
-namespace Models.Events
+public class EventBase
 {
-	public class EventBase
-	{
-		public EventBase()
-		{
-			OccuredOn = DateTime.Now;
-		}
+    public EventBase()
+    {
+        OccuredOn = DateTime.Now;
+    }
 
-		protected DateTime OccuredOn
-		{
-			get;
-			set;
-		}
-	}
+    protected DateTime OccuredOn
+    {
+        get;
+        set;
+    }
 }

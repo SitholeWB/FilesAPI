@@ -1,14 +1,10 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿namespace Contracts;
 
-namespace Contracts
+public interface IStorageRepository
 {
-	public interface IStorageRepository
-	{
-		Task<string> UploadFileAsync(Stream fileStream, string fileName);
+    Task<string> UploadFileAsync(Stream fileStream, string fileName, CancellationToken token);
 
-		Task<Stream> DownloadFileAsync(string id);
+    Task<Stream> DownloadFileAsync(string id, CancellationToken token);
 
-		Task DeleteFileAsync(string id);
-	}
+    Task DeleteFileAsync(string id, CancellationToken token);
 }

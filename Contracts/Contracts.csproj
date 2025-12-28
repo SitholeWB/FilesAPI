@@ -9,6 +9,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="Models" />
+    <Using Include="System.IO" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.Metrics" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 

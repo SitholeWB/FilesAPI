@@ -18,6 +18,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.IO" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="Models" />
+    <Using Include="LiteDB" />
+    <Using Include="Contracts" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.Metrics" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="MongoDB.Driver" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Contracts\Contracts.csproj" />
   </ItemGroup>
 

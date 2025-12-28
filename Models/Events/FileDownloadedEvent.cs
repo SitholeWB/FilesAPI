@@ -1,7 +1,6 @@
-﻿namespace Models.Events
+﻿namespace Models;
+
+public class FileDownloadedEvent : EventBase
 {
-	public class FileDownloadedEvent : EventBase
-	{
-		public FileDetails FileDetails { get; set; }
-	}
+    public FileDetails FileDetails { get; set; }
 }

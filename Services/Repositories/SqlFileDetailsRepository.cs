@@ -1,14 +1,4 @@
-using Contracts;
-using Microsoft.EntityFrameworkCore;
-using Models;
-using Models.Exceptions;
-using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Services.Repositories;
+namespace Services;
 
 public class SqlFileDetailsRepository : IFileDetailsRepository
 {
@@ -19,48 +9,48 @@ public class SqlFileDetailsRepository : IFileDetailsRepository
         _filesDbContext = filesDbContext;
     }
 
-    public async Task<FileDetails> AddFileDetailsAsync(FileDetails details)
+    public async Task<FileDetails> AddFileDetailsAsync(FileDetails details, CancellationToken token)
     {
         details.Id = Guid.NewGuid().ToString();
-        await _filesDbContext.AddAsync(details);
-        await _filesDbContext.SaveChangesAsync();
+        await _filesDbContext.AddAsync(details, token);
+        await _filesDbContext.SaveChangesAsync(token);
         return details;
     }
 
-    public async Task DeleteFileAsync(string id)
+    public async Task DeleteFileAsync(string id, CancellationToken token)
     {
-        var fileDetails = await _filesDbContext.FileDetails.FindAsync(id);
+        var fileDetails = await _filesDbContext.FileDetails.FindAsync(id, token);
         if (fileDetails == default)
         {
             throw new FilesApiException("No File found for given Id");
         }
         _filesDbContext.Remove(fileDetails);
-        await _filesDbContext.SaveChangesAsync();
+        await _filesDbContext.SaveChangesAsync(token);
     }
 
-    public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync()
+    public async Task<IEnumerable<FileDetails>> GetAllFileDetailsAsync(CancellationToken token)
     {
-        return await _filesDbContext.FileDetails.ToListAsync();
+        return await _filesDbContext.FileDetails.ToListAsync(token);
     }
 
-    public async Task<FileDetails> GetFileDetailsAsync(string id)
+    public async Task<FileDetails> GetFileDetailsAsync(string id, CancellationToken token)
     {
-        return await _filesDbContext.FileDetails.FindAsync(id);
+        return await _filesDbContext.FileDetails.FindAsync(id, token);
     }
 
-    public async Task<FileDetails> GetFileDetailsByHashIdAsync(string hashId)
+    public async Task<FileDetails> GetFileDetailsByHashIdAsync(string hashId, CancellationToken token)
     {
-        return await _filesDbContext.FileDetails.Where(x => x.HashId == hashId).FirstOrDefaultAsync();
+        return await _filesDbContext.FileDetails.Where(x => x.HashId == hashId).FirstOrDefaultAsync(token);
     }
 
-    public async Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag)
+    public async Task<IEnumerable<FileDetails>> GetFileDetailsByTagAsync(string tag, CancellationToken token)
     {
-        return await _filesDbContext.FileDetails.Where(x => x.Tags.Contains(tag)).ToListAsync();
+        return await _filesDbContext.FileDetails.Where(x => x.Tags.Contains(tag)).ToListAsync(token);
     }
 
-    public async Task<FileDetails> UpdateFileDetailsAsync(string id, FileDetails details)
+    public async Task<FileDetails> UpdateFileDetailsAsync(string id, FileDetails details, CancellationToken token)
     {
-        var fileDetails = await _filesDbContext.FileDetails.FindAsync(id);
+        var fileDetails = await _filesDbContext.FileDetails.FindAsync(id, token);
         if (fileDetails == default)
         {
             throw new FilesApiException("No File found for given Id");
@@ -71,7 +61,7 @@ public class SqlFileDetailsRepository : IFileDetailsRepository
         fileDetails.Tags = details.Tags ?? fileDetails.Tags;
         fileDetails.LastModified = DateTime.UtcNow;
         fileDetails.NumberOfDownloads = details.NumberOfDownloads;
-        await _filesDbContext.SaveChangesAsync();
+        await _filesDbContext.SaveChangesAsync(token);
         return fileDetails;
     }
 }

@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 
-namespace Models.Commands
+namespace Models;
+
+public class UploadImageCommand
 {
-	public class UploadImageCommand
-	{
-		public IFormFile File { get; set; }
-		public string Description { get; set; }
-		public IEnumerable<string> Tags { get; set; }
-	}
+    public IFormFile File { get; set; }
+    public string Description { get; set; }
+    public IEnumerable<string> Tags { get; set; }
 }

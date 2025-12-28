@@ -10,14 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using Models.Events;
-using Models.Exceptions;
-using Models.Settings;
+using Models;
 using Newtonsoft.Json;
 using Services;
-using Services.Events;
-using Services.Events.Handlers;
-using Services.Repositories;
 using System;
 
 namespace FilesAPI
@@ -97,11 +92,11 @@ namespace FilesAPI
                                  Configuration.GetValue<string>("UPLOADS_PATH", "./uploads");
 
                 services.AddScoped<IStorageRepository>(provider =>
-                    new Services.Repositories.LiteDbStorageRepository(databasePath, uploadsPath));
+                    new LiteDbStorageRepository(databasePath, uploadsPath));
                 services.AddScoped<IFileDetailsRepository>(provider =>
-                    new Services.Repositories.LiteDbFileDetailsRepository(databasePath));
+                    new LiteDbFileDetailsRepository(databasePath));
                 services.AddScoped<IDownloadAnalyticsRepository>(provider =>
-                    new Services.Repositories.LiteDbDownloadAnalyticsRepository(databasePath));
+                    new LiteDbDownloadAnalyticsRepository(databasePath));
             }
             else if (useSqlDatabase)
             {
@@ -116,10 +111,9 @@ namespace FilesAPI
                 // Use MongoDB for traditional operation
                 services.AddScoped<IStorageRepository, MongoStorageRepository>();
                 services.AddScoped<IFileDetailsRepository, MongoFileDetailsRepository>();
-                services.AddScoped<IDownloadAnalyticsRepository, Services.Repositories.MongoDbDownloadAnalyticsRepository>();
+                services.AddScoped<IDownloadAnalyticsRepository, MongoDbDownloadAnalyticsRepository>();
             }
 
-            //services.AddSingleton<IStorageService, FilesService>();
             services.AddScoped<IStorageService, StorageService>();
             services.AddScoped<IAnalyticsService, AnalyticsService>();
             services.AddSingleton<ISettingsService, SettingsService>();
