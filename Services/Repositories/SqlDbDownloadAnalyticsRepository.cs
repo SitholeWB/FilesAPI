@@ -14,8 +14,13 @@ public class SqlDbDownloadAnalyticsRepository : IDownloadAnalyticsRepository
 
     public async Task<DownloadAnalytics> AddDownloadRecordAsync(DownloadAnalytics analytics, CancellationToken token)
     {
+        if (string.IsNullOrEmpty(analytics.Id))
+        {
+            analytics.Id = ObjectId.NewObjectId().ToString();
+        }
         await _filesDbContext.AddAsync(analytics, token);
         await _filesDbContext.SaveChangesAsync(token);
+
         return analytics;
     }
 

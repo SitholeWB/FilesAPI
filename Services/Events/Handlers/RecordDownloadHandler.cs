@@ -1,16 +1,26 @@
-﻿namespace Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Services;
 
 public class RecordDownloadHandler : IEventHandler<FileDownloadedEvent>
 {
-    private readonly IStorageService _storageService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public RecordDownloadHandler(IStorageService storageService)
+    public RecordDownloadHandler(IServiceScopeFactory scopeFactory)
     {
-        _storageService = storageService;
+        _scopeFactory = scopeFactory;
     }
 
-    public async Task RunAsync(FileDownloadedEvent obj, CancellationToken token)
+    public Task RunAsync(FileDownloadedEvent obj, CancellationToken token)
     {
-        await _storageService.IncrementDownloadCountAsync(obj.FileDetails, token);
+        //fire‑and‑forget
+        _ = Task.Run(async () =>
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
+            await storageService.IncrementDownloadCountAsync(obj.FileDetails, CancellationToken.None);
+        }, CancellationToken.None);
+
+        return Task.CompletedTask;
     }
 }

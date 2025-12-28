@@ -2,8 +2,8 @@ using Contracts;
 using FilesAPI.ViewModels;
 using FilesAPI.ViewModels.Mapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Models;
+using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +17,12 @@ namespace FilesAPI.Controllers;
 public class StorageController : ControllerBase
 {
     private readonly IStorageService _storageService;
+    private readonly EventHandlerContainer _eventContainer;
 
-    public StorageController(IStorageService storageService)
+    public StorageController(IStorageService storageService, EventHandlerContainer eventContainer)
     {
         _storageService = storageService;
+        _eventContainer = eventContainer;
     }
 
     //Example from https://dottutorials.net/dotnet-core-web-api-multipart-form-data-upload-file/
@@ -56,27 +58,8 @@ public class StorageController : ControllerBase
     {
         var (content, details) = await _storageService.DownloadFileAsync(id, token);
 
-        // Record analytics
-        var userAgent = Request.Headers["User-Agent"].ToString();
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var referrer = Request.Headers["Referer"].ToString();
-
-        // Fire and forget analytics recording
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var analyticsService = HttpContext.RequestServices.GetService<IAnalyticsService>();
-                if (analyticsService != null)
-                {
-                    await analyticsService.RecordDownloadAsync(id, userAgent, ipAddress, referrer, "download", token);
-                }
-            }
-            catch
-            {
-                // Ignore analytics errors to not affect file download
-            }
-        }, token);
+        // Record analytics for view
+        await RecordAnalyticsAsync(details, token);
 
         this.Response.ContentLength = details.Size;
         this.Response.Headers["Accept-Ranges"] = "bytes";
@@ -90,26 +73,7 @@ public class StorageController : ControllerBase
         var (stream, details) = await _storageService.DownloadFileAsync(id, token);
 
         // Record analytics for view
-        var userAgent = Request.Headers["User-Agent"].ToString();
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var referrer = Request.Headers["Referer"].ToString();
-
-        // Fire and forget analytics recording
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var analyticsService = HttpContext.RequestServices.GetService<IAnalyticsService>();
-                if (analyticsService != null)
-                {
-                    await analyticsService.RecordDownloadAsync(id, userAgent, ipAddress, referrer, "view", token);
-                }
-            }
-            catch
-            {
-                // Ignore analytics errors to not affect file download
-            }
-        }, token);
+        await RecordAnalyticsAsync(details, token);
 
         this.Response.ContentLength = details.Size;
         this.Response.Headers["Accept-Ranges"] = "bytes";
@@ -151,5 +115,23 @@ public class StorageController : ControllerBase
     {
         string deletedId = await _storageService.DeleteFileAsync(id, token);
         return Ok($"Deleted '{deletedId}' successfully.");
+    }
+
+    private async Task RecordAnalyticsAsync(FileDetails details, CancellationToken token)
+    {
+        var userAgent = Request.Headers["User-Agent"].ToString();
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var referrer = Request.Headers["Referer"].ToString();
+        var enhancedFileDownloadedEvent = new EnhancedFileDownloadedEvent
+        {
+            DownloadMethod = "view",
+            DownloadStartTime = DateTime.UtcNow,
+            FileDetails = details,
+            UserAgent = userAgent,
+            IpAddress = ipAddress,
+            Referrer = referrer,
+            RequestId = HttpContext.TraceIdentifier
+        };
+        await _eventContainer.PublishAsync(enhancedFileDownloadedEvent, token);
     }
 }

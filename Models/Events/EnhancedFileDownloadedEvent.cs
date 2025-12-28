@@ -3,7 +3,7 @@ namespace Models;
 /// <summary>
 /// Enhanced file download event with additional analytics data
 /// </summary>
-public class EnhancedFileDownloadedEvent
+public class EnhancedFileDownloadedEvent : EventBase
 {
     public FileDetails FileDetails { get; set; }
     public DateTime DownloadStartTime { get; set; }

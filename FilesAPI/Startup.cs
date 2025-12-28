@@ -119,8 +119,10 @@ namespace FilesAPI
             services.AddSingleton<ISettingsService, SettingsService>();
 
             services.AddScoped<RecordDownloadHandler>();
+            services.AddScoped<RecordDownloadAnalyticsHandler>();
             services.AddScoped<EventHandlerContainer>();
             EventHandlerContainer.Subscribe<FileDownloadedEvent, RecordDownloadHandler>();
+            EventHandlerContainer.Subscribe<EnhancedFileDownloadedEvent, RecordDownloadAnalyticsHandler>();
 
             services.AddControllers();
         }

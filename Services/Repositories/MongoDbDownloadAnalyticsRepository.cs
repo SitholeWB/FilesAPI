@@ -33,6 +33,10 @@ public class MongoDbDownloadAnalyticsRepository : IDownloadAnalyticsRepository
 
     public async Task<DownloadAnalytics> AddDownloadRecordAsync(DownloadAnalytics analytics, CancellationToken token)
     {
+        if (string.IsNullOrEmpty(analytics.Id))
+        {
+            analytics.Id = ObjectId.NewObjectId().ToString();
+        }
         await _collection.InsertOneAsync(analytics, options: default, token);
         return analytics;
     }
