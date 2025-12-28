@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -84,6 +85,9 @@ namespace FilesAPI
             var useEmbeddedDatabase = Configuration.GetValue<bool>("USE_EMBEDDED_DATABASE", false) ||
                                      Environment.GetEnvironmentVariable("USE_EMBEDDED_DATABASE") == "true";
 
+            var useSqlDatabase = Configuration.GetValue<bool>("USE_SQL_DATABASE", false) ||
+                         Environment.GetEnvironmentVariable("USE_SQL_DATABASE") == "true";
+
             if (useEmbeddedDatabase)
             {
                 // Use LiteDB for self-contained operation
@@ -99,11 +103,19 @@ namespace FilesAPI
                 services.AddScoped<IDownloadAnalyticsRepository>(provider =>
                     new Services.Repositories.LiteDbDownloadAnalyticsRepository(databasePath));
             }
+            else if (useSqlDatabase)
+            {
+                // Use SQL database for operation
+                services.AddDbContext<FilesDbContext>(options => options.UseSqlite("Data Source=database.db"));
+                services.AddScoped<IStorageRepository, SqlStorageRepository>();
+                services.AddScoped<IFileDetailsRepository, SqlFileDetailsRepository>();
+                services.AddScoped<IDownloadAnalyticsRepository, SqlDbDownloadAnalyticsRepository>();
+            }
             else
             {
                 // Use MongoDB for traditional operation
-                services.AddScoped<IStorageRepository, StorageRepository>();
-                services.AddScoped<IFileDetailsRepository, FileDetailsRepository>();
+                services.AddScoped<IStorageRepository, MongoStorageRepository>();
+                services.AddScoped<IFileDetailsRepository, MongoFileDetailsRepository>();
                 services.AddScoped<IDownloadAnalyticsRepository, Services.Repositories.MongoDbDownloadAnalyticsRepository>();
             }
 
