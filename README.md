@@ -34,7 +34,7 @@
 - **Historical Data** - Detailed download history with user agent and IP tracking
 
 ### 🏗️ **Architecture & Deployment**
-- **Dual Database Support** - MongoDB for scale, LiteDB for simplicity
+- **Dual Database Support** - MongoDB for scale, LiteDB for simplicity or EntityFramework with your favourite database
 - **Docker Ready** - Self-contained deployment or traditional MongoDB setup
 - **Production Optimized** - Health checks, logging, security best practices
 - **Microservice Architecture** - Clean separation of concerns, testable codebase
@@ -58,7 +58,7 @@ run-standalone.bat
 **✅ What you get:**
 - 🎯 **Zero Dependencies** - No MongoDB installation required
 - 📦 **Single Container** - Everything runs in one container
-- 💾 **Embedded Database** - Uses LiteDB for data storage
+- 💾 **Embedded Database** - Uses LiteDB or SQLite for data storage
 - 🔄 **Persistent Storage** - Data survives container restarts
 - 🌐 **Instant Access** - API available at `http://localhost:5100`
 
@@ -274,7 +274,7 @@ FilesAPI_9-master/
 
 ### 🔧 Technology Stack
 
-- **Framework**: .NET 9.0
+- **Framework**: .NET 10.0
 - **Databases**: MongoDB 7.0, LiteDB 5.0.21
 - **API Documentation**: Swashbuckle.AspNetCore 9.0.3
 - **Testing**: NUnit 4.2.2
@@ -385,6 +385,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⭐ Star this repository if you find it useful!**
 
-*Built with ❤️ using .NET 9.0*
+*Built with ❤️ using .NET 10.0*
 
 </div>
